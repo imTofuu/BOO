@@ -11,12 +11,14 @@ if(BOO_BUILD_SHARED)
     message(STATUS "Building BOO shared")
     add_library(boo SHARED
             include/BOO/BOO.h
-            src/BOO.cpp)
+            src/BOO.cpp
+            src/BOO.tpp)
 else()
     message(STATUS "Building BOO static")
     add_library(boo STATIC
             include/BOO/BOO.h
-            src/BOO.cpp)
+            src/BOO.cpp
+            src/BOO.tpp)
 endif()
 target_include_directories(boo PRIVATE include)
 
