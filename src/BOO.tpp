@@ -61,7 +61,7 @@ namespace BOO {
 
 
     template<typename T>
-    T& Registry::addComponentToEntity(EntityID id) {
+    ComponentRef<T> Registry::addComponentToEntity(EntityID id) {
         Archetype* currentArchetype = m_entityArchetypes.at(id);
         size_t currentIndex = currentArchetype->f_entityComponentIndices.at(id);
 
@@ -96,12 +96,24 @@ namespace BOO {
     }
 
     template<typename T>
-    T& Registry::getComponentFromEntity(EntityID id) {
-        Archetype* archetype = m_entityArchetypes.at(id);
-
-        size_t index = archetype->f_entityComponentIndices.at(id);
-        return *static_cast<T*>(archetype->f_componentStorage.at(typeid(T))->getMember(index));
+    ComponentRef<T> Registry::getComponentFromEntity(EntityID id) {
+        return ComponentRef<T>(id, this);
     }
+
+    template<typename T>
+    ComponentRef<T> Registry::setComponentOnEntity(EntityID id, const T& component) {
+        ComponentRef<T> ref(id, this);
+        *ref.get() = component;
+
+        return ref;
+    }
+
+    template<typename T>
+    bool Registry::entityHasComponent(EntityID id) {
+        return getComponentFromEntity<T>(id).valid();
+    }
+
+
 
     template<typename T>
     void Registry::removeComponentFromEntity(EntityID id) {
@@ -147,4 +159,20 @@ namespace BOO {
         m_archetypes.emplace(newID, adding ? oldArchetype.copyWith<T>() : oldArchetype.copyWithout<T>());
         return m_archetypes.at(newID);
     }
+
+    template<typename T>
+    T* IComponentRef::retrieveComponent() {
+        Archetype* archetype = p_registry->m_entityArchetypes.at(p_entityId);
+        size_t memberIndex = archetype->f_entityComponentIndices.at(p_entityId);
+        return static_cast<T*>(archetype->f_componentStorage.at(typeid(T))->getMember(memberIndex));
+    }
+
+    template<typename T>
+    bool IComponentRef::isValid() const {
+        if(const auto it = p_registry->m_entityArchetypes.find(p_entityId); it != p_registry->m_entityArchetypes.end())
+            return it->second->f_componentStorage.find(typeid(T)) != it->second->f_componentStorage.end();
+        return false;
+    }
+
+
 }
