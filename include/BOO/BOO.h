@@ -83,9 +83,13 @@ namespace BOO {
 
     // ----------------------------------------------------------------------------------------------------------------\
     //                                                                                                                 |
-    // <==< Registry >===============================================================================================|
+    // <==< Registry >=================================================================================================|
     //                                                                                                                 |
     // ----------------------------------------------------------------------------------------------------------------/
+
+    class IComponentRef;
+    template<typename T>
+    class ComponentRef;
 
     class Registry {
     public:
@@ -96,19 +100,67 @@ namespace BOO {
         void destroyEntity(EntityID id);
 
         template<typename T>
-        T& addComponentToEntity(EntityID id);
+        ComponentRef<T> addComponentToEntity(EntityID id);
         template<typename T>
-        T& getComponentFromEntity(EntityID id);
+        ComponentRef<T> getComponentFromEntity(EntityID id);
         template<typename T>
         void removeComponentFromEntity(EntityID id);
 
     private:
+
+        friend class IComponentRef;
 
         template<typename T, bool adding>
         Archetype& getOrCreateArchetype(Archetype& oldArchetype);
 
         std::unordered_map<ArchetypeID, Archetype> m_archetypes;
         std::unordered_map<EntityID, Archetype*> m_entityArchetypes;
+
+    };
+
+    // ----------------------------------------------------------------------------------------------------------------\
+    //                                                                                                                 |
+    // <==< Component References >=====================================================================================|
+    //                                                                                                                 |
+    // ----------------------------------------------------------------------------------------------------------------/
+
+    class IComponentRef {
+    protected:
+
+        IComponentRef(EntityID id, Registry* registry) : p_entityId(id), p_registry(registry) {}
+        virtual ~IComponentRef() = default;
+
+        template<typename T>
+        T* retrieveComponent();
+        template<typename T>
+        [[nodiscard]] bool isValid() const;
+
+    private:
+
+        Registry* p_registry;
+        EntityID p_entityId;
+
+    };
+
+    template<typename T>
+    class ComponentRef final : public IComponentRef {
+    public:
+
+        ComponentRef(EntityID id, Registry* registry) : IComponentRef(id, registry) {}
+
+        [[nodiscard]] bool valid() const { return isValid<T>(); }
+
+        [[nodiscard]] T* get() { return retrieveComponent<T>(); }
+        [[nodiscard]] const T* get() const { return retrieveComponent<T>(); }
+
+        T* operator->() { return get(); }
+        const T* operator->() const { return get(); }
+
+        T& operator*() { return *get(); }
+        const T& operator*() const { return *get(); }
+
+        operator T*() { return get(); }
+        operator const T*() const { return get(); }
 
     };
 

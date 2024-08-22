@@ -16,14 +16,13 @@ int main() {
     BOO::Registry registry;
 
     BOO::EntityID entity1 = registry.createEntity();
+    BOO::ComponentRef<t1> ref = registry.addComponentToEntity<t1>(entity1);
 
-    registry.addComponentToEntity<t1>(entity1);
-    t1& t1Comp = registry.getComponentFromEntity<t1>(entity1);
-    t1Comp.b = 'j';
-
-    t2& t2Comp = registry.addComponentToEntity<t2>(entity1);
+    bool first = ref.valid();
 
     registry.removeComponentFromEntity<t1>(entity1);
+
+    bool second = ref.valid();
 
     std::cin.get();
 }
