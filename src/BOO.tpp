@@ -101,6 +101,21 @@ namespace BOO {
     }
 
     template<typename T>
+    ComponentRef<T> Registry::setComponentOnEntity(EntityID id, const T& component) {
+        ComponentRef<T> ref(id, this);
+        *ref.get() = component;
+
+        return ref;
+    }
+
+    template<typename T>
+    bool Registry::entityHasComponent(EntityID id) {
+        return getComponentFromEntity<T>(id).valid();
+    }
+
+
+
+    template<typename T>
     void Registry::removeComponentFromEntity(EntityID id) {
         Archetype* currentArchetype = m_entityArchetypes.at(id);
         size_t currentIndex = currentArchetype->f_entityComponentIndices.at(id);

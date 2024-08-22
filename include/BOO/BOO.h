@@ -104,6 +104,10 @@ namespace BOO {
         template<typename T>
         ComponentRef<T> getComponentFromEntity(EntityID id);
         template<typename T>
+        ComponentRef<T> setComponentOnEntity(EntityID id, const T& component);
+        template<typename T>
+        bool entityHasComponent(EntityID id);
+        template<typename T>
         void removeComponentFromEntity(EntityID id);
 
     private:
