@@ -1,12 +1,27 @@
 #pragma once
 
+#include <typeindex>
+#include <unordered_set>
 #include <vector>
+
+template<>
+    struct std::hash<std::unordered_set<std::type_index>> {
+    size_t operator()(const std::unordered_set<std::type_index>& archetypeID) const noexcept {
+        size_t hash = 0;
+        for(const auto& type : archetypeID) {
+            hash ^= std::hash<std::type_index>{}(type) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        }
+        return hash;
+    }
+};
 
 namespace BOO {
 
+    using EntityID = uint64_t;
+
     // ----------------------------------------------------------------------------------------------------------------\
     //                                                                                                                 |
-    // <==< Component Pools >=============================================================================================|
+    // <==< Component Pools >==========================================================================================|
     //                                                                                                                 |
     // ----------------------------------------------------------------------------------------------------------------/
 
@@ -15,10 +30,12 @@ namespace BOO {
 
         virtual ~IComponentPool() = default;
 
-        virtual std::shared_ptr<IComponentPool> cloneType() = 0;
+        [[nodiscard]] virtual std::shared_ptr<IComponentPool> cloneType() = 0;
 
         virtual size_t addMember() = 0;
         virtual size_t addMember(const void* component) = 0;
+
+        virtual void* getMember(size_t index) = 0;
 
         virtual void removeMember(size_t index) = 0;
 
@@ -33,7 +50,7 @@ namespace BOO {
         size_t addMember() override;
         size_t addMember(const void* component) override;
 
-        T* getMember(size_t index);
+        void* getMember(size_t index) override;
 
         void removeMember(size_t index) override;
 
@@ -43,6 +60,58 @@ namespace BOO {
 
     };
 
-    #include "../src/BOO.tpp"
+    // ----------------------------------------------------------------------------------------------------------------\
+    //                                                                                                                 |
+    // <==< Archetypes >===============================================================================================|
+    //                                                                                                                 |
+    // ----------------------------------------------------------------------------------------------------------------/
+
+    using ArchetypeID = std::unordered_set<std::type_index>;
+
+    struct Archetype {
+
+        template<typename T>
+        Archetype copyWith();
+        template<typename T>
+        Archetype copyWithout();
+
+        ArchetypeID f_archetypeID;
+        std::unordered_map<std::type_index, std::shared_ptr<IComponentPool>> f_componentStorage;
+        std::unordered_map<EntityID, size_t> f_entityComponentIndices;
+
+    };
+
+    // ----------------------------------------------------------------------------------------------------------------\
+    //                                                                                                                 |
+    // <==< Registry >===============================================================================================|
+    //                                                                                                                 |
+    // ----------------------------------------------------------------------------------------------------------------/
+
+    class Registry {
+    public:
+
+        Registry();
+
+        EntityID createEntity();
+        void destroyEntity(EntityID id);
+
+        template<typename T>
+        T& addComponentToEntity(EntityID id);
+        template<typename T>
+        T& getComponentFromEntity(EntityID id);
+        template<typename T>
+        void removeComponentFromEntity(EntityID id);
+
+    private:
+
+        template<typename T, bool adding>
+        Archetype& getOrCreateArchetype(Archetype& oldArchetype);
+
+        std::unordered_map<ArchetypeID, Archetype> m_archetypes;
+        std::unordered_map<EntityID, Archetype*> m_entityArchetypes;
+
+    };
 
 }
+
+#include "../src/BOO.tpp"

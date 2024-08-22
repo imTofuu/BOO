@@ -7,20 +7,23 @@ struct t1 {
     char b = '\0';
 };
 
+struct t2 {
+    float c = 0;
+};
+
 int main() {
-    t1 comp;
-    comp.b = 'a';
 
-    BOO::ComponentPool<t1> pool;
-    for(int i = 0; i < 4; i++) {
-        pool.addMember();
-    }
-    pool.addMember(&comp);
+    BOO::Registry registry;
 
-    pool.removeMember(2);
+    BOO::EntityID entity1 = registry.createEntity();
 
-    std::shared_ptr<BOO::ComponentPool<t1>> pool2 =
-        std::static_pointer_cast<BOO::ComponentPool<t1>>(pool.cloneType());
+    registry.addComponentToEntity<t1>(entity1);
+    t1& t1Comp = registry.getComponentFromEntity<t1>(entity1);
+    t1Comp.b = 'j';
+
+    t2& t2Comp = registry.addComponentToEntity<t2>(entity1);
+
+    registry.removeComponentFromEntity<t1>(entity1);
 
     std::cin.get();
 }
