@@ -14,7 +14,6 @@ engine projects.
 Features planned for future releases are:
 
 - Systems
-- Permanent references to components
 - Prefabs
 - Component sharing
 - Entity hierarchies
