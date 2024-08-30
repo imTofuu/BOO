@@ -174,5 +174,28 @@ namespace BOO {
         return false;
     }
 
+    template<typename KType, typename VType>
+    VType* PointerMap<KType, VType>::getOrNull(const KType& key) {
+        try {
+            return m_map.at(key);
+        } catch(std::out_of_range& _) {
+            return nullptr;
+        }
+    }
+
+    template<typename KType, typename VType>
+    VType* PointerMap<KType, VType>::getOrThrow(const KType& key) {
+        return m_map.at(key);
+    }
+
+    template<typename KType, typename VType>
+    void PointerMap<KType, VType>::emplace(const KType& key, VType& value) {
+        m_map.emplace(key, value);
+    }
+
+    template<typename KType, typename VType>
+    void PointerMap<KType, VType>::put(const KType& key, VType& value) {
+        m_map[key] = value;
+    }
 
 }
