@@ -168,28 +168,6 @@ namespace BOO {
 
     };
 
-    // ----------------------------------------------------------------------------------------------------------------\
-    //                                                                                                                 |
-    // <==< Pointer Maps >=============================================================================================|
-    //                                                                                                                 |
-    // ----------------------------------------------------------------------------------------------------------------/
-
-    template<typename KType, typename VType>
-    class PointerMap {
-    public:
-
-        VType* getOrNull(const KType& key);
-        VType* getOrThrow(const KType& key);
-
-        void emplace(const KType& key, VType& value);
-        void put(const KType& key, VType& value);
-
-    private:
-
-        std::unordered_map<EntityID, VType*> m_map;
-
-    };
-
 }
 
 #include "../src/BOO.tpp"
