@@ -37,7 +37,7 @@ namespace BOO {
 
         newArchetype.f_archetypeID = f_archetypeID;
         for(auto& [ type, pool ] : f_componentStorage) {
-            newArchetype.f_componentStorage.emplace(type,  pool->cloneType());
+            newArchetype.f_componentStorage.emplace(type, pool->cloneType());
         }
         newArchetype.f_archetypeID.insert(typeid(T));
         newArchetype.f_componentStorage.emplace(typeid(T), std::make_shared<ComponentPool<T>>());
@@ -160,11 +160,51 @@ namespace BOO {
         return m_archetypes.at(newID);
     }
 
+    template<typename... T>
+    QueryResult<T...> Registry::queryAll() {
+        QueryResult<T...> result;
+        for(auto& [ id, archetype ] : m_entityArchetypes) {
+            if((... && (archetype->f_archetypeID.find(typeid(T)) != archetype->f_archetypeID.end())))
+                result.add(id, this);
+        }
+        return result;
+    }
+
+    template<typename... T>
+    QueryResult<T...> Registry::queryMatch() {
+        QueryResult<T...> result;
+        const static ArchetypeID archetypeID { typeid(T)... };
+        for(auto& [ id, archetype ] : m_entityArchetypes) {
+            if(archetype->f_archetypeID == archetypeID)
+                result.add(id, this);
+        }
+        return result;
+    }
+
+    template<typename... T>
+    QueryResult<T...> Registry::queryAny() {
+        QueryResult<T...> result;
+        for(auto& [ id, archetype ] : m_entityArchetypes) {
+            if((... || (archetype->f_archetypeID.find(typeid(T)) != archetype->f_archetypeID.end())))
+                result.add(id, this);
+        }
+        return result;
+    }
+
+    template<typename... T>
+    void QueryResult<T...>::add(EntityID id, Registry* registry) {
+        m_components.emplace_back(std::make_tuple(ComponentRef<T> { id, registry }...));
+    }
+
     template<typename T>
     T* IComponentRef::retrieveComponent() {
         Archetype* archetype = p_registry->m_entityArchetypes.at(p_entityId);
         size_t memberIndex = archetype->f_entityComponentIndices.at(p_entityId);
-        return static_cast<T*>(archetype->f_componentStorage.at(typeid(T))->getMember(memberIndex));
+        IComponentPool* pool = nullptr;
+        if(archetype->f_componentStorage.find(typeid(T))  != archetype->f_componentStorage.end())
+            pool = archetype->f_componentStorage.at(typeid(T)).get();
+        if(!pool) return nullptr;
+        return static_cast<T*>(pool->getMember(memberIndex));
     }
 
     template<typename T>

@@ -5,7 +5,7 @@
 #include <vector>
 
 template<>
-    struct std::hash<std::unordered_set<std::type_index>> {
+struct std::hash<std::unordered_set<std::type_index>> {
     size_t operator()(const std::unordered_set<std::type_index>& archetypeID) const noexcept {
         size_t hash = 0;
         for(const auto& type : archetypeID) {
@@ -90,6 +90,8 @@ namespace BOO {
     class IComponentRef;
     template<typename T>
     class ComponentRef;
+    template<typename... T>
+    class QueryResult;
 
     class Registry {
     public:
@@ -110,6 +112,13 @@ namespace BOO {
         template<typename T>
         void removeComponentFromEntity(EntityID id);
 
+        template<typename... T>
+        QueryResult<T...> queryAll();
+        template<typename... T>
+        QueryResult<T...> queryMatch();
+        template<typename... T>
+        QueryResult<T...> queryAny();
+
     private:
 
         friend class IComponentRef;
@@ -119,6 +128,33 @@ namespace BOO {
 
         std::unordered_map<ArchetypeID, Archetype> m_archetypes;
         std::unordered_map<EntityID, Archetype*> m_entityArchetypes;
+
+    };
+
+    // ----------------------------------------------------------------------------------------------------------------\
+    //                                                                                                                 |
+    // <==< Query Result >=============================================================================================|
+    //                                                                                                                 |
+    // ----------------------------------------------------------------------------------------------------------------/
+
+    template<typename... T>
+    class QueryResult {
+    public:
+
+        void add(EntityID id, Registry* registry);
+
+        using ComponentVecType = std::vector<std::tuple<ComponentRef<T>...>>;
+
+        [[nodiscard]] typename ComponentVecType::iterator begin() { return m_components.begin(); }
+        [[nodiscard]] typename ComponentVecType::iterator end() { return m_components.end(); }
+        [[nodiscard]] typename ComponentVecType::const_iterator begin() const { return m_components.begin(); }
+        [[nodiscard]] typename ComponentVecType::const_iterator end() const { return m_components.end(); }
+        [[nodiscard]] typename ComponentVecType::const_iterator cbegin() const { return m_components.cbegin(); }
+        [[nodiscard]] typename ComponentVecType::const_iterator cend() const { return m_components.cend(); }
+
+    private:
+
+        ComponentVecType m_components;
 
     };
 
@@ -167,7 +203,6 @@ namespace BOO {
         operator const T*() const { return get(); }
 
     };
-
 }
 
 #include "../src/BOO.tpp"

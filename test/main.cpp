@@ -19,10 +19,25 @@ int main() {
     BOO::ComponentRef<t1> ref = registry.addComponentToEntity<t1>(entity1);
     ref->b = 'h';
 
-    t1 newComponent;
-    newComponent.b = 'j';
+    for(int i = 0; i < 100000; i++) {
+        BOO::EntityID id = registry.createEntity();
+        registry.addComponentToEntity<t1>(id);
+        registry.addComponentToEntity<t2>(id);
+    }
 
-    registry.setComponentOnEntity(entity1, newComponent);
+    for(int i = 0; i < 10; i++) {
+        BOO::EntityID id = registry.createEntity();
+        registry.addComponentToEntity<t1>(id);
+    }
+
+    for(int i = 0; i < 10; i++) {
+        BOO::EntityID id = registry.createEntity();
+        registry.addComponentToEntity<t2>(id);
+    }
+
+    for(auto& [ t1Comp, t2Comp ] : registry.queryAny<t1, t2>()) {
+        if(t1Comp) t1Comp->a = 53634;
+    }
 
     std::cin.get();
 }
