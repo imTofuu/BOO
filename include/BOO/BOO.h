@@ -30,7 +30,7 @@ namespace BOO {
 
         virtual ~IComponentPool() = default;
 
-        [[nodiscard]] virtual std::shared_ptr<IComponentPool> cloneType() = 0;
+        virtual std::shared_ptr<IComponentPool> cloneType() = 0;
 
         virtual size_t addMember() = 0;
         virtual size_t addMember(const void* component) = 0;
@@ -98,26 +98,31 @@ namespace BOO {
 
         Registry();
 
-        EntityID createEntity();
+        EntityID createEntity() { return createEntity(0); }
+        EntityID createEntity(EntityID parentID);
         void destroyEntity(EntityID id);
+
+        [[nodiscard]] EntityID getEntityParent(EntityID id) const { return m_entityParents.at(id); }
+        void setEntityParent(EntityID id, EntityID parentID);
+        [[nodiscard]] const std::vector<EntityID>& getEntityChildren(EntityID id) { return m_entityChildren.at(id); }
 
         template<typename T>
         ComponentRef<T> addComponentToEntity(EntityID id);
         template<typename T>
-        ComponentRef<T> getComponentFromEntity(EntityID id);
+        [[nodiscard]] ComponentRef<T> getComponentFromEntity(EntityID id);
         template<typename T>
         ComponentRef<T> setComponentOnEntity(EntityID id, const T& component);
         template<typename T>
-        bool entityHasComponent(EntityID id);
+        [[nodiscard]] bool entityHasComponent(EntityID id);
         template<typename T>
         void removeComponentFromEntity(EntityID id);
 
         template<typename... T>
-        QueryResult<T...> queryAll();
+        [[nodiscard]] QueryResult<T...> queryAll();
         template<typename... T>
-        QueryResult<T...> queryMatch();
+        [[nodiscard]] QueryResult<T...> queryMatch();
         template<typename... T>
-        QueryResult<T...> queryAny();
+        [[nodiscard]] QueryResult<T...> queryAny();
 
     private:
 
@@ -128,6 +133,9 @@ namespace BOO {
 
         std::unordered_map<ArchetypeID, Archetype> m_archetypes;
         std::unordered_map<EntityID, Archetype*> m_entityArchetypes;
+
+        std::unordered_map<EntityID, std::vector<EntityID>> m_entityChildren;
+        std::unordered_map<EntityID, EntityID> m_entityParents;
 
     };
 
@@ -167,13 +175,13 @@ namespace BOO {
     class IComponentRef {
     protected:
 
-        IComponentRef(EntityID id, Registry* registry) : p_entityId(id), p_registry(registry) {}
+        IComponentRef(EntityID id, Registry* registry) : p_registry(registry), p_entityId(id) {}
         virtual ~IComponentRef() = default;
 
         template<typename T>
         T* retrieveComponent();
         template<typename T>
-        [[nodiscard]] bool isValid() const;
+        bool isValid() const;
 
     private:
 
@@ -193,14 +201,14 @@ namespace BOO {
         [[nodiscard]] T* get() { return retrieveComponent<T>(); }
         [[nodiscard]] const T* get() const { return retrieveComponent<T>(); }
 
-        T* operator->() { return get(); }
-        const T* operator->() const { return get(); }
+        [[nodiscard]] T* operator->() { return get(); }
+        [[nodiscard]] const T* operator->() const { return get(); }
 
-        T& operator*() { return *get(); }
-        const T& operator*() const { return *get(); }
+        [[nodiscard]] T& operator*() { return *get(); }
+        [[nodiscard]] const T& operator*() const { return *get(); }
 
-        operator T*() { return get(); }
-        operator const T*() const { return get(); }
+        [[nodiscard]] operator T*() { return get(); }
+        [[nodiscard]] operator const T*() const { return get(); }
 
     };
 }
