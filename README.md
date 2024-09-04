@@ -10,13 +10,13 @@ engine projects.
 - Entity creation and deletion
 - Adding, getting and removing components from entities
 - Support for custom component types without macro registration
+- Query items for systems
+- Entity heirarchies
 
 Features planned for future releases are:
 
-- Systems
 - Prefabs
 - Component sharing
-- Entity hierarchies
 
 ### References used:
 * [Flecs medium article series](https://ajmmertens.medium.com/building-an-ecs-1-types-hierarchies-and-prefabs-9f07666a1e9d)
