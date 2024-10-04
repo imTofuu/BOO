@@ -183,7 +183,7 @@ namespace BOO {
         template<typename T>
         bool isValid() const;
 
-    private:
+    protected:
 
         Registry* p_registry;
         EntityID p_entityId;
@@ -200,6 +200,8 @@ namespace BOO {
 
         [[nodiscard]] T* get() { return retrieveComponent<T>(); }
         [[nodiscard]] const T* get() const { return retrieveComponent<T>(); }
+
+        [[nodiscard]] EntityID getEntity() const { return p_entityId; }
 
         [[nodiscard]] T* operator->() { return get(); }
         [[nodiscard]] const T* operator->() const { return get(); }
