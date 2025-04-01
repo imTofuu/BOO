@@ -3,6 +3,10 @@
 #include <typeindex>
 #include <unordered_set>
 #include <vector>
+#include <cstdint>
+#include <algorithm>
+#include <unordered_map>
+#include <memory>
 
 template<>
 struct std::hash<std::unordered_set<std::type_index>> {
